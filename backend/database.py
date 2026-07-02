@@ -41,6 +41,9 @@ engine = create_engine(
     max_overflow=20,
     pool_pre_ping=True,
     echo=False,
+    connect_args={
+        "ssl": {"verify_cert": True, "verify_identity": True}
+    } if "tidbcloud" in DATABASE_URL else {},
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
