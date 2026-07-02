@@ -20,10 +20,17 @@ jobs:
       - name: Install dependencies
         run: pip install httpx pymysql pyyaml sqlalchemy
 
+      - name: Debug check
+        run: |
+          echo "=== PYTHONPATH=$PYTHONPATH ==="
+          python -c "import backend; print('backend ok')"
+          python -c "from backend.models import Base; print('models ok')"
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
       - name: Run crawler
         env:
           WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONPATH: ${{ github.workspace }}
-          API_BASE: https://animerch-backend.onrender.com
-        run: python backend/crawler/weibo_spider_cloud.py
+        run: python -u backend/crawler/weibo_spider_cloud.py
