@@ -25,4 +25,5 @@ jobs:
           WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           PYTHONPATH: ${{ github.workspace }}
+          API_BASE: https://animerch-backend.onrender.com
         run: python backend/crawler/weibo_spider_cloud.py
