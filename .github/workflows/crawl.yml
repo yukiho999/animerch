@@ -1,4 +1,4 @@
-name: Scheduled Crawl
+name: Trigger Cloud Crawl
 
 on:
   schedule:
@@ -6,31 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
-  crawl:
+  trigger:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
-        run: pip install httpx pymysql pyyaml sqlalchemy
-
-      - name: Debug check
+      - name: Trigger Render crawl
         run: |
-          echo "=== PYTHONPATH=$PYTHONPATH ==="
-          python -c "import backend; print('backend ok')"
-          python -c "from backend.models import Base; print('models ok')"
-        env:
-          PYTHONPATH: ${{ github.workspace }}
-
-      - name: Run crawler
-        env:
-          WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          PYTHONPATH: ${{ github.workspace }}
-        run: python -u backend/crawler/weibo_spider_cloud.py
+          curl -X POST https://animerch-backend.onrender.com/api/admin/crawl/trigger
+          echo ""
+          echo "Crawl triggered on Render"
