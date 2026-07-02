@@ -7,10 +7,16 @@ import { DetailSkeleton } from '../components/Skeleton';
 import { fetchMerch } from '../api/client';
 import type { MerchDetail } from '../types';
 
+const API_BASE_IMG = import.meta.env.VITE_API_BASE || '/api';
+
+function proxyUrl(u: string): string {
+  return `${API_BASE_IMG}/proxy/image?url=${encodeURIComponent(u)}`;
+}
+
 function parseImages(url: string | null): string[] {
   if (!url) return [];
-  if (url.includes('，') || url.includes(',')) return url.split(/[，,]+/).map(s => s.trim()).filter(Boolean);
-  return [url];
+  if (url.includes('，') || url.includes(',')) return url.split(/[，,]+/).map(s => proxyUrl(s.trim())).filter(Boolean);
+  return [proxyUrl(url)];
 }
 
 export default function MerchDetailPage() {
