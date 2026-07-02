@@ -211,8 +211,9 @@
       if (!images.length) return '';
       var html = '<div class="image-carousel">';
       images.forEach(function(src) {
-        var proxy = '/api/proxy/image?url=' + encodeURIComponent(src);
-        html += '<img src="' + proxy + '" onclick="openLightbox(\'' + proxy + '\')" loading="lazy" title="点击放大">';
+        var proxyBase = '/api/proxy/image';
+        var proxy = proxyBase + '?url=' + encodeURIComponent(src);
+        html += '<img src="' + proxy + '" onclick="openLightbox(\'' + proxy.replace(/'/g, "\\'") + '\')" loading="lazy" title="点击放大">';
       });
       html += '</div>';
       return html;
