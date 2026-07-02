@@ -1,0 +1,262 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Ma+Shan+Zheng&family=ZCOOL+KuaiLe&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Reenie+Beanie&display=swap');
+
+/* 自定义手写字体 — 还原手写现场 */
+@font-face {
+  font-family: 'Handwrite';
+  src: local('还原手写现场'), url('/还原手写现场.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================
+   桐桐的吃谷日记 — 墨韵美学 设计系统
+   ============================================ */
+
+:root {
+  /* === 主色调 === */
+  --c-ink:       #1C1C1C;
+  --c-ink-light: #5A5A5A;
+  --c-ink-lighter:#999999;
+
+  --c-gold:      #C59B5F;
+  --c-gold-deep: #9B7A3C;
+  --c-gold-light: #E8D5B0;
+  --c-gold-pale: #F7F2E9;
+
+  --c-vermillion: #B5343A;
+  --c-vermillion-dark: #8B1A20;
+
+  /* === 背景 === */
+  --c-page:      #1a1a1a;
+  --c-surface:   rgba(255,255,255,0.06);
+  --c-kasuri:    rgba(255,255,255,0.04);  /* 絣 — 背景纹理色 */
+
+  /* === 字体 === */
+  --font-display: 'HandWrite', 'Long Cang', 'Liu Jian Mao Cao', 'Ma Shan Zheng', 'STKaiti', 'KaiTi', serif;
+  --font-title:  'Zhi Mang Xing', 'Ma Shan Zheng', 'Long Cang', 'Liu Jian Mao Cao', 'STKaiti', 'KaiTi', cursive;
+  --font-english: 'Reenie Beanie', 'Long Cang', cursive;
+  --font-body:    'Noto Sans SC', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+  /* === 间距 === */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+
+  /* === 阴影 === */
+  --shadow-card:   0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-card-hv: 0 8px 30px rgba(0,0,0,0.06), 0 2px 8px rgba(0,0,0,0.04);
+  --shadow-nav:    0 1px 0 rgba(0,0,0,0.04);
+
+  /* === 圆角 === */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+
+  /* === 过渡 === */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --duration-fast: 200ms;
+  --duration-normal: 350ms;
+  --duration-slow: 600ms;
+}
+
+/* === 全局重置 === */
+body {
+  font-family: var(--font-body);
+  color: var(--c-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* === 自定义滚动条 === */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--c-page); }
+::-webkit-scrollbar-thumb { background: #D4CEC3; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #B8B0A3; }
+
+/* === 选择文本 === */
+::selection {
+  background: rgba(197, 155, 95, 0.2);
+  color: var(--c-ink);
+}
+
+/* ============================================
+   组件样式
+   ============================================ */
+
+/* 卡片 */
+.card-white {
+  background: rgba(255,255,255,0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--radius-md);
+  transition:
+    transform var(--duration-normal) var(--ease-out),
+    box-shadow var(--duration-normal) var(--ease-out),
+    border-color var(--duration-normal) var(--ease-out);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+}
+.card-white:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1), 0 2px 8px rgba(0,0,0,0.06);
+  border-color: rgba(255,255,255,0.5);
+}
+
+/* 按钮 */
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 10px 28px;
+  font-family: var(--font-body);
+  font-size: 0.85rem; font-weight: 600;
+  letter-spacing: 0.04em;
+  background: var(--c-vermillion);
+  color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.btn-primary:hover {
+  background: var(--c-vermillion-dark);
+  box-shadow: 0 4px 16px rgba(181,52,58,0.2);
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 24px;
+  font-family: var(--font-body);
+  font-size: 0.8rem; font-weight: 500;
+  letter-spacing: 0.04em;
+  background: transparent;
+  color: var(--c-ink-light);
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-out);
+}
+.btn-outline:hover {
+  border-color: var(--c-gold);
+  color: var(--c-gold);
+}
+
+/* 工艺标签 */
+.craft-pill {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 0.7rem; font-weight: 500;
+  background: var(--c-gold-pale);
+  color: var(--c-gold-deep);
+  border: 1px solid rgba(197,155,95,0.2);
+  transition: all var(--duration-fast) var(--ease-out);
+  letter-spacing: 0.03em;
+}
+.craft-pill:hover {
+  background: rgba(197,155,95,0.15);
+  border-color: rgba(197,155,95,0.35);
+  transform: translateY(-1px);
+}
+
+/* 大标题 */
+.section-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  letter-spacing: 0.06em;
+  position: relative;
+  padding-bottom: 16px;
+}
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 2px;
+  background: var(--c-vermillion);
+  border-radius: 1px;
+}
+
+/* 水墨分割线 */
+.ink-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0,0,0,0.04) 15%,
+    rgba(0,0,0,0.08) 50%,
+    rgba(0,0,0,0.04) 85%,
+    transparent 100%
+  );
+  margin: 32px 0;
+}
+
+/* === 动画关键帧 === */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade-up {
+  animation: fadeUp var(--duration-slow) var(--ease-out) both;
+}
+.anim-fade-up:nth-child(1) { animation-delay: 0.02s; }
+.anim-fade-up:nth-child(2) { animation-delay: 0.06s; }
+.anim-fade-up:nth-child(3) { animation-delay: 0.10s; }
+.anim-fade-up:nth-child(4) { animation-delay: 0.14s; }
+.anim-fade-up:nth-child(5) { animation-delay: 0.18s; }
+.anim-fade-up:nth-child(6) { animation-delay: 0.22s; }
+.anim-fade-up:nth-child(7) { animation-delay: 0.26s; }
+.anim-fade-up:nth-child(8) { animation-delay: 0.30s; }
+
+@keyframes fadeUpShort {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-fade-up-short {
+  animation: fadeUpShort 0.5s var(--ease-out) both;
+}
+.anim-fade-up-short:nth-child(1) { animation-delay: 0.02s; }
+.anim-fade-up-short:nth-child(2) { animation-delay: 0.05s; }
+.anim-fade-up-short:nth-child(3) { animation-delay: 0.08s; }
+.anim-fade-up-short:nth-child(4) { animation-delay: 0.11s; }
+.anim-fade-up-short:nth-child(5) { animation-delay: 0.14s; }
+.anim-fade-up-short:nth-child(6) { animation-delay: 0.17s; }
+.anim-fade-up-short:nth-child(7) { animation-delay: 0.20s; }
+.anim-fade-up-short:nth-child(8) { animation-delay: 0.23s; }
+
+@keyframes inkReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
+.anim-ink-reveal {
+  animation: inkReveal 1s var(--ease-out) both;
+}
+
+/* === 渐变背景动画 === */
+@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}

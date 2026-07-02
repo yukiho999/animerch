@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build output
+frontend/dist/
+*.tsbuildinfo
+
+# Sensitive config (contains database credentials)
+config.yaml
+
+# Environment
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+backend.log
+
+# Data
+data/*.json
+!data/ip_aliases.json
+!data/craft_tags.json
+
+# Chrome crawler profile
+chrome_profile/
+
+# Docker
+mysql_data/

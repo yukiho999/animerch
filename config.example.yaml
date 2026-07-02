@@ -1,0 +1,31 @@
+# ============================================
+# AnimEarch 配置模板
+# 复制此文件为 config.yaml 并填入真实值
+# ============================================
+
+database:
+  host: localhost
+  port: 3306
+  user: root
+  password: your_password_here
+  database: animerch
+  charset: utf8mb4
+
+crawler:
+  weibo:
+    base_url: https://m.weibo.cn/api/container/getIndex
+    interval_min: 3
+    interval_max: 8
+    max_pages_per_keyword: 3
+  search_keywords:
+    - "周边 上新"
+    - "谷子 发售"
+
+nlp:
+  ip_aliases_file: data/ip_aliases.json
+  craft_tags_file: data/craft_tags.json
+  confidence_threshold: 0.3
+
+server:
+  host: 0.0.0.0
+  port: 8000

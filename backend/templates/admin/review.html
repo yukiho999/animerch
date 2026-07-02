@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>审核后台 — 周边审核</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --c-ink: #1C1C1C; --c-ink-light: #5A5A5A; --c-ink-lighter: #999;
+      --c-gold: #C59B5F; --c-gold-deep: #9B7A3C; --c-gold-light: #E8D5B0; --c-gold-pale: #F7F2E9;
+      --c-vermillion: #B5343A; --c-vermillion-dark: #8B1A20;
+      --c-page: #FCFBF9; --c-surface: #FFFFFF; --c-kasuri: #F5F2ED;
+      --font-display: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', serif;
+      --font-body: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--c-page); color: var(--c-ink); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+    body::before { content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(197,155,95,0.04) 0%, transparent 50%), radial-gradient(ellipse 60% 40% at 85% 100%, rgba(181,52,58,0.02) 0%, transparent 50%); }
+    .header { position: relative; z-index: 2; background: #fff; padding: 16px 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-bottom: 1px solid rgba(0,0,0,0.04); box-shadow: 0 1px 0 rgba(0,0,0,0.04); }
+    .header h1 { font-family: var(--font-display); font-size: 1.35rem; color: var(--c-ink); letter-spacing: 0.06em; }
+    .stats { display: flex; gap: 24px; font-size: 0.78rem; color: var(--c-ink-light); flex-wrap: wrap; }
+    .stats strong { color: var(--c-vermillion); }
+    .container { position: relative; z-index: 2; max-width: 980px; margin: 28px auto; padding: 0 20px; }
+    .toolbar { display: flex; gap: 10px; margin-bottom: 24px; flex-wrap: wrap; align-items: center; }
+    .btn-crawl { padding: 8px 22px; border-radius: 4px; border: 1px solid rgba(197,155,95,0.25); background: #fff; color: var(--c-gold-deep); cursor: pointer; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.05em; font-family: var(--font-body); transition: all 0.25s; }
+    .btn-crawl:hover { background: rgba(197,155,95,0.06); border-color: var(--c-gold); }
+    select.filter { appearance: none; padding: 7px 28px 7px 12px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); background: #fff; font-size: 0.78rem; color: var(--c-ink-light); cursor: pointer; font-family: var(--font-body); }
+    .review-card { background: #fff; border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 20px 22px; margin-bottom: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); transition: border-color 0.3s, box-shadow 0.3s; }
+    .review-card:hover { border-color: rgba(197,155,95,0.25); box-shadow: 0 4px 20px rgba(0,0,0,0.04); }
+    .review-card.approved { border-left: 3px solid #4CAF50; }
+    .review-card.rejected { border-left: 3px solid var(--c-vermillion); opacity: 0.7; }
+    .review-card.edited { border-left: 3px solid #2196F3; }
+    .meta { font-size: 0.72rem; color: var(--c-ink-lighter); margin-bottom: 10px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .meta a { color: var(--c-gold-deep); text-decoration: none; }
+    .meta a:hover { text-decoration: underline; }
+    .original { background: var(--c-kasuri); padding: 12px 14px; border-radius: 6px; margin-bottom: 10px; font-size: 0.8rem; line-height: 1.65; max-height: 300px; overflow-y: auto; color: var(--c-ink-light); white-space: pre-wrap; word-break: break-all; }
+    .image-carousel { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 10px; padding: 4px 0; scroll-snap-type: x mandatory; }
+    .image-carousel::-webkit-scrollbar { height: 4px; }
+    .image-carousel::-webkit-scrollbar-thumb { background: rgba(197,155,95,0.3); border-radius: 2px; }
+    .image-carousel img { max-height: 160px; border-radius: 6px; cursor: pointer; scroll-snap-align: start; object-fit: cover; transition: transform 0.2s; }
+    .image-carousel img:hover { transform: scale(1.05); }
+    .image-lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.85); justify-content: center; align-items: center; }
+    .image-lightbox.active { display: flex; }
+    .image-lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 8px; }
+    .image-lightbox .close { position: absolute; top: 20px; right: 24px; color: #fff; font-size: 2rem; cursor: pointer; }
+    .nlp-hint { margin-bottom: 12px; font-size: 0.75rem; color: var(--c-ink-lighter); display: flex; flex-wrap: wrap; gap: 10px; }
+    .nlp-hint strong { color: var(--c-ink-light); }
+    .edit-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; padding: 14px; border: 1px solid rgba(197,155,95,0.15); border-radius: 6px; background: var(--c-gold-pale); }
+    .ef-full { grid-column: 1 / -1; }
+    .ef-label { display: block; color: var(--c-gold-deep); font-weight: 600; font-size: 0.72rem; margin-bottom: 3px; letter-spacing: 0.04em; }
+    .ef-input, .ef-select { width: 100%; padding: 6px 10px; border-radius: 4px; font-size: 0.8rem; background: #fff; border: 1px solid rgba(0,0,0,0.1); color: var(--c-ink); transition: border-color 0.25s; font-family: var(--font-body); }
+    .ef-input:focus, .ef-select:focus { border-color: var(--c-gold); outline: none; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cb-item { display: flex; align-items: center; gap: 3px; font-size: 0.75rem; color: var(--c-ink-light); cursor: pointer; }
+    .cb-item input { accent-color: var(--c-gold); }
+    .cat-row { display: flex; gap: 8px; align-items: center; margin-bottom: 6px; }
+    .cat-row select { width: 140px; }
+    .cat-row input { width: 100px; }
+    .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+    .btn { padding: 7px 18px; border-radius: 4px; border: none; cursor: pointer; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; font-family: var(--font-body); transition: all 0.25s; }
+    .btn-toggle { background: transparent; color: var(--c-gold-deep); border: 1px solid rgba(197,155,95,0.3); }
+    .btn-toggle:hover { background: rgba(197,155,95,0.06); }
+    .btn-save { background: var(--c-gold); color: #fff; }
+    .btn-save:hover { background: var(--c-gold-deep); }
+    .btn-approve { background: #4CAF50; color: #fff; }
+    .btn-approve:hover { background: #388E3C; }
+    .btn-reject { background: transparent; color: var(--c-ink-lighter); border: 1px solid rgba(0,0,0,0.1); }
+    .btn-reject:hover { background: var(--c-vermillion); color: #fff; border-color: var(--c-vermillion); }
+    .empty { text-align: center; padding: 60px 20px; color: var(--c-ink-lighter); font-family: var(--font-display); }
+    .craft-pill { display: inline-block; padding: 2px 10px; border-radius: 9999px; font-size: 0.7rem; font-weight: 500; background: var(--c-gold-pale); color: var(--c-gold-deep); border: 1px solid rgba(197,155,95,0.2); }
+    .toast { position: fixed; top: 24px; right: 24px; padding: 12px 24px; border-radius: 6px; color: #fff; font-weight: 600; font-size: 0.85rem; z-index: 999; display: none; letter-spacing: 0.04em; box-shadow: 0 4px 20px rgba(0,0,0,0.15); font-family: var(--font-body); max-width: 500px; word-wrap: break-word; }
+    .toast.ok { background: #4CAF50; }
+    .toast.err { background: var(--c-vermillion-dark); }
+    .sep { height: 1px; background: linear-gradient(90deg, transparent, rgba(197,155,95,0.2), transparent); margin: 12px 0; }
+    .search-input { padding: 7px 12px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); background: #fff; font-size: 0.78rem; color: var(--c-ink); font-family: var(--font-body); width: 180px; }
+    .search-input:focus { border-color: var(--c-gold); outline: none; }
+    .page-jump { padding: 7px 8px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); background: #fff; font-size: 0.78rem; color: var(--c-ink); font-family: var(--font-body); width: 50px; text-align: center; }
+    .page-jump:focus { border-color: var(--c-gold); outline: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>周边审核后台</h1>
+    <div class="stats" id="header-stats">加载中...</div>
+  </div>
+  <div class="container">
+    <div class="toolbar">
+      <button class="btn-crawl" onclick="triggerCrawl()">手动抓取</button>
+      <button class="btn-crawl" onclick="triggerReparse()">重新解析</button>
+      <select class="filter" id="status-filter" onchange="currentPage=1;loadQueue()">
+        <option value="pending">待审核</option>
+        <option value="edited">已编辑</option>
+        <option value="approved">已通过</option>
+        <option value="rejected">已拒绝</option>
+      </select>
+      <input class="search-input" id="search-input" type="text" placeholder="搜索关键字..." onkeydown="if(event.key==='Enter'){currentPage=1;loadQueue();}">
+      <button class="btn btn-toggle" onclick="currentPage=1;loadQueue()">搜索</button>
+    </div>
+    <div id="queue-container"><div class="empty">加载中...</div></div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    var API = '/api/admin';
+
+    /* ── 工具函数 ── */
+    function formatError(data) {
+      if (!data || !data.detail) return '操作失败';
+      if (typeof data.detail === 'string') return data.detail;
+      if (Array.isArray(data.detail)) {
+        return data.detail.map(function(d) {
+          return (d.loc || []).join('.') + ': ' + d.msg;
+        }).join('; ');
+      }
+      return String(data.detail);
+    }
+
+    function toast(type, msg) {
+      var el = document.getElementById('toast');
+      el.className = 'toast ' + type;
+      if (typeof msg === 'object') msg = JSON.stringify(msg);
+      el.textContent = msg;
+      el.style.display = 'block';
+      clearTimeout(el._timer);
+      el._timer = setTimeout(function() { el.style.display = 'none'; }, 5000);
+    }
+
+    /* ── 数据加载 ── */
+    var currentPage = 1;
+    var pageSize = 20;
+
+    function loadQueue() {
+      var status = document.getElementById('status-filter').value;
+      var search = document.getElementById('search-input').value.trim();
+      var url = API + '/review-queue?review_status=' + status + '&limit=' + pageSize + '&page=' + currentPage;
+      if (search) url += '&search=' + encodeURIComponent(search);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) { renderQueue(data); })
+        .catch(function(e) { document.getElementById('queue-container').innerHTML = '<div class="empty">加载失败: ' + e.message + '</div>'; });
+    }
+
+    function renderQueue(data) {
+      var items = data.items || [];
+      var container = document.getElementById('queue-container');
+      if (!items.length) { container.innerHTML = '<div class="empty">没有记录</div>'; return; }
+
+      var methods = ['通贩','场贩','受注','限定','抽选','未知'];
+      var catOptions = ['吧唧','色纸','亚克力立牌','粘土人','挂件','文件夹','海报','立牌','其他'];
+
+      container.innerHTML = items.map(function(item) {
+        var confPct = Math.round((item.confidence || 0) * 100);
+        var crafts = (item.craft_keywords || []).map(function(c) { return '<span class="craft-pill">' + htmlEscape(c) + '</span>'; }).join(' ');
+        var statusClass = '';
+        if (item.review_status === 'approved') statusClass = 'approved';
+        else if (item.review_status === 'rejected') statusClass = 'rejected';
+        else if (item.review_status === 'edited') statusClass = 'edited';
+
+        // 发售方式复选框
+        var methodChecks = methods.map(function(m) {
+          var checked = (item.release_method || '').indexOf(m) >= 0 ? 'checked' : '';
+          return '<label class="cb-item"><input type="checkbox" value="' + m + '" ' + checked + '>' + m + '</label>';
+        }).join('');
+
+        // 品类下拉（预制选中项）
+        var catSelect = '<select class="ef-select">' +
+          catOptions.map(function(c) {
+            var sel = item.category === c ? 'selected' : '';
+            return '<option value="' + c + '" ' + sel + '>' + c + '</option>';
+          }).join('') + '</select>';
+
+        return '<div class="review-card ' + statusClass + '" id="card-' + item.id + '">' +
+          '<div class="meta"><span>@' + htmlEscape(item.author_name || '未知') + '</span><span>' + (item.post_time || '') + '</span><a href="' + htmlEscape(item.post_url || '#') + '" target="_blank">查看原文</a><span>置信度 ' + confPct + '%</span><span>状态: ' + item.review_status + '</span></div>' +
+          // 图片轮播
+          buildImageCarousel(item) +
+          '<div class="original">' + htmlEscape(item.post_content || '(无内容)') + '</div>' +
+          '<div class="nlp-hint">NLP: IP=<strong>' + htmlEscape(item.ip_name_hint || '?') + '</strong> 种类=<strong>' + htmlEscape(item.category || '?') + '(' + htmlEscape(item.category_hint || '') + ')</strong> 售价=<strong>' + (item.official_price ? '¥' + item.official_price : '?') + '</strong> 日期=<strong>' + (item.release_date || '?') + '</strong> 方式=<strong>' + htmlEscape(item.release_method || '?') + '</strong> 工艺=<strong>' + (crafts || '无') + '</strong></div>' +
+          // 编辑表单
+          '<div class="edit-form" id="edit-form-' + item.id + '" style="display:none;">' +
+            '<div><label class="ef-label">IP 名称</label><input class="ef-input" id="ef-ip-' + item.id + '" value="' + htmlAttr(item.ip_name_hint || '') + '" placeholder="如: 魔道祖师"></div>' +
+            '<div><label class="ef-label">发售日期</label><input class="ef-input" id="ef-date-' + item.id + '" type="date" value="' + (item.release_date || '') + '"></div>' +
+            '<div><label class="ef-label">周边名称</label><input class="ef-input" id="ef-name-' + item.id + '" value="' + htmlAttr(item.merch_name || '') + '" placeholder="周边名称"></div>' +
+            '<div><label class="ef-label">发售方式（可多选）</label><div class="checkbox-group" id="ef-methods-' + item.id + '">' + methodChecks + '</div></div>' +
+            '<div class="ef-full"><div class="sep"></div><label class="ef-label" style="margin-bottom:6px">制品种类 & 对应售价</label><div id="ef-cats-' + item.id + '"><div class="cat-row">' + catSelect + '<input class="ef-input" placeholder="售价(元)" type="number" step="0.01" value="' + (item.official_price || '') + '"></div></div>' +
+            '<button type="button" class="btn btn-toggle" style="margin-top:4px;font-size:0.72rem" onclick="addCatRow(' + item.id + ')">再添加一种品类</button></div>' +
+          '</div>' +
+          // 操作按钮
+          '<div class="actions">' +
+            '<button class="btn btn-toggle" id="btn-toggle-' + item.id + '" onclick="toggleEdit(' + item.id + ')">编辑</button>' +
+            '<button class="btn btn-save" id="btn-edit-save-' + item.id + '" style="display:none;" onclick="editAndApprove(' + item.id + ')">保存并入库</button>' +
+            '<button class="btn btn-approve" id="btn-approve-' + item.id + '" onclick="approve(' + item.id + ')">确认入库</button>' +
+            '<button class="btn btn-reject" onclick="reject(' + item.id + ')">拒绝</button>' +
+          '</div></div>';
+      }).join('');
+
+      // 分页导航
+      container.innerHTML += buildPagination(data);
+    }
+
+    function htmlEscape(str) {
+      if (!str) return '';
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+    function htmlAttr(str) {
+      return htmlEscape(str).replace(/'/g,'&#39;');
+    }
+
+    /* ── 图片轮播 ── */
+    function buildImageCarousel(item) {
+      var images = item.images || [];
+      if (!images.length) return '';
+      var html = '<div class="image-carousel">';
+      images.forEach(function(src) {
+        var proxy = '/api/proxy/image?url=' + encodeURIComponent(src);
+        html += '<img src="' + proxy + '" onclick="openLightbox(\'' + proxy + '\')" loading="lazy" title="点击放大">';
+      });
+      html += '</div>';
+      return html;
+    }
+
+    function openLightbox(src) {
+      var lb = document.getElementById('lightbox');
+      if (!lb) {
+        lb = document.createElement('div');
+        lb.id = 'lightbox';
+        lb.className = 'image-lightbox';
+        lb.innerHTML = '<span class="close" onclick="this.parentElement.classList.remove(\"active\")">&times;</span><img src="">';
+        document.body.appendChild(lb);
+        lb.addEventListener('click', function(e) { if (e.target === lb) lb.classList.remove('active'); });
+      }
+      lb.querySelector('img').src = src;
+      lb.classList.add('active');
+    }
+
+    /* ── 分页 ── */
+    function buildPagination(data) {
+      if (data.total_pages <= 1) return '';
+      var html = '<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px;padding:12px;font-size:0.8rem;flex-wrap:wrap;">';
+      var prevDisabled = data.page <= 1 ? 'disabled' : '';
+      var nextDisabled = data.page >= data.total_pages ? 'disabled' : '';
+
+      html += '<button class="btn btn-toggle" style="padding:6px 14px;" onclick="goPage(1)" ' + (data.page <= 1 ? 'disabled' : '') + '>首页</button>';
+      html += '<button class="btn btn-toggle" style="padding:6px 14px;" onclick="goPage(' + (data.page - 1) + ')" ' + prevDisabled + '>上一页</button>';
+
+      // 页码按钮（当前页前后各4页）
+      var start = Math.max(1, data.page - 4);
+      var end = Math.min(data.total_pages, data.page + 4);
+      for (var i = start; i <= end; i++) {
+        var activeStyle = i === data.page ? 'background:var(--c-gold);color:#fff;border-color:var(--c-gold);' : '';
+        html += '<button class="btn btn-toggle" style="padding:4px 10px;min-width:32px;' + activeStyle + '" onclick="goPage(' + i + ')">' + i + '</button>';
+      }
+
+      html += '<button class="btn btn-toggle" style="padding:6px 14px;" onclick="goPage(' + (data.page + 1) + ')" ' + nextDisabled + '>下一页</button>';
+      html += '<button class="btn btn-toggle" style="padding:6px 14px;" onclick="goPage(' + data.total_pages + ')" ' + (data.page >= data.total_pages ? 'disabled' : '') + '>末页</button>';
+      html += '&nbsp;<span style="color:var(--c-ink-light);white-space:nowrap;">' + data.total + '条 / ' + data.total_pages + '页</span>';
+      html += '&nbsp;<span style="color:var(--c-ink-lighter);font-size:0.72rem;">跳至</span> <input class="page-jump" id="jump-page" type="number" min="1" max="' + data.total_pages + '" value="' + data.page + '" onkeydown="if(event.key===\'Enter\')jumpPage(' + data.total_pages + ')"> <span style="color:var(--c-ink-lighter);font-size:0.72rem;">页</span>';
+      html += '</div>';
+      return html;
+    }
+
+    function goPage(p) {
+      if (p < 1) p = 1;
+      currentPage = p;
+      loadQueue();
+      window.scrollTo(0, 0);
+    }
+
+    function jumpPage(totalPages) {
+      var p = parseInt(document.getElementById('jump-page').value) || 1;
+      if (p < 1) p = 1;
+      if (p > totalPages) p = totalPages;
+      currentPage = p;
+      loadQueue();
+      window.scrollTo(0, 0);
+    }
+
+    /* ── 编辑表单操作 ── */
+    function toggleEdit(id) {
+      var form = document.getElementById('edit-form-' + id);
+      var toggleBtn = document.getElementById('btn-toggle-' + id);
+      var saveBtn = document.getElementById('btn-edit-save-' + id);
+      var approveBtn = document.getElementById('btn-approve-' + id);
+      if (form.style.display === 'none' || form.style.display === '') {
+        form.style.display = 'grid';
+        toggleBtn.textContent = '收起';
+        saveBtn.style.display = 'inline-block';
+        approveBtn.style.display = 'none';
+      } else {
+        form.style.display = 'none';
+        toggleBtn.textContent = '编辑';
+        saveBtn.style.display = 'none';
+        approveBtn.style.display = 'inline-block';
+      }
+    }
+
+    function addCatRow(id) {
+      var container = document.getElementById('ef-cats-' + id);
+      var row = document.createElement('div');
+      row.className = 'cat-row';
+      row.innerHTML = '<select class="ef-select">' +
+        '<option value="">--</option><option value="吧唧">吧唧</option><option value="色纸">色纸</option><option value="亚克力立牌">亚克力立牌</option><option value="粘土人">粘土人</option><option value="挂件">挂件</option><option value="文件夹">文件夹</option>' +
+        '<option value="海报">海报</option><option value="立牌">立牌</option><option value="其他">其他</option></select> ' +
+        '<input class="ef-input" placeholder="售价(元)" type="number" step="0.01"> ' +
+        '<button type="button" class="btn btn-reject" style="padding:4px 8px;font-size:0.7rem" onclick="this.parentElement.remove()">删除</button>';
+      container.appendChild(row);
+    }
+
+    function collectCategories(id) {
+      var cats = [];
+      var selects = document.querySelectorAll('#ef-cats-' + id + ' select');
+      var inputs = document.querySelectorAll('#ef-cats-' + id + ' input[type="number"]');
+      selects.forEach(function(sel, i) {
+        var cat = sel.value;
+        if (!cat) return;
+        var priceStr = inputs[i] ? inputs[i].value : '';
+        var price = parseFloat(priceStr) || null;
+        cats.push({ category: cat, price: price });
+      });
+      return cats;
+    }
+
+    function collectMethods(id) {
+      var checks = document.querySelectorAll('#ef-methods-' + id + ' input:checked');
+      var result = [];
+      checks.forEach(function(c) { result.push(c.value); });
+      return result;
+    }
+
+    /* ── API 操作 ── */
+    function approve(id) {
+      doAction('approve', id);
+    }
+
+    function editAndApprove(id) {
+      var dateInput = document.getElementById('ef-date-' + id);
+      var dateVal = (dateInput && dateInput.value) ? dateInput.value : null;
+
+      var categoriesVal = collectCategories(id);
+      var methodsVal = collectMethods(id);
+
+      // 收集工艺关键词
+      var craftPills = document.querySelectorAll('#card-' + id + ' .nlp-hint .craft-pill');
+      var craftKeywords = [];
+      craftPills.forEach(function(p) { craftKeywords.push(p.textContent); });
+
+      var body = {
+        ip_name: getInputVal('ef-ip-' + id),
+        merch_name: getInputVal('ef-name-' + id),
+        release_date: dateVal,
+        categories: categoriesVal.length > 0 ? categoriesVal : undefined,
+        release_methods: methodsVal.length > 0 ? methodsVal : undefined,
+        craft_keywords: craftKeywords.length > 0 ? craftKeywords : undefined,
+      };
+
+      // 去掉 undefined 属性
+      Object.keys(body).forEach(function(k) {
+        if (body[k] === undefined || body[k] === null || body[k] === '') delete body[k];
+      });
+
+      doAction('edit', id, body);
+    }
+
+    function reject(id) {
+      if (!confirm('确定拒绝这条记录？')) return;
+      doAction('reject', id);
+    }
+
+    function getInputVal(elemId) {
+      var el = document.getElementById(elemId);
+      return (el && el.value) ? el.value : null;
+    }
+
+    function doAction(action, id, body) {
+      var url = API + '/review/' + id + '/' + action;
+      var opts = { method: 'POST', headers: { 'Content-Type': 'application/json' } };
+      if (body) opts.body = JSON.stringify(body);
+
+      fetch(url, opts)
+        .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+        .then(function(result) {
+          if (result.ok && result.data.ok) {
+            var msgMap = { approve: '已入库!', edit: '编辑后入库!', reject: '已拒绝' };
+            toast('ok', msgMap[action] || '操作成功');
+            setTimeout(loadQueue, 500);
+            loadHeaderStats();
+          } else {
+            toast('err', formatError(result.data));
+          }
+        })
+        .catch(function(e) { toast('err', '网络错误: ' + e.message); });
+    }
+
+    /* ── 工具按钮 ── */
+    function triggerCrawl() {
+      toast('ok', '爬虫启动中... 如果弹出验证码请滑动');
+      fetch(API + '/crawl/trigger', { method: 'POST' })
+        .then(function() {
+          // 每5秒检查一次进度
+          var pollTimer = setInterval(function() {
+            fetch(API + '/stats')
+              .then(function(r) { return r.json(); })
+              .then(function(s) {
+                loadHeaderStats();
+                if (s.pending_parse === 0) {
+                  clearInterval(pollTimer);
+                  loadQueue();
+                  toast('ok', '爬取完成! 共 ' + s.total_posts + ' 条帖子');
+                }
+              })
+              .catch(function() { clearInterval(pollTimer); });
+          }, 5000);
+        })
+        .catch(function(e) { toast('err', '启动失败: ' + e.message); });
+    }
+    function triggerReparse() {
+      toast('ok', 'NLP 重新解析中...');
+      fetch(API + '/crawl/reparse', { method: 'POST' });
+      setTimeout(loadQueue, 3000);
+    }
+
+    function loadHeaderStats() {
+      fetch(API + '/stats')
+        .then(function(r) { return r.json(); })
+        .then(function(s) {
+          document.getElementById('header-stats').innerHTML =
+            '总帖 <strong>' + s.total_posts + '</strong> · 待解析 <strong>' + s.pending_parse + '</strong> · 待审核 <strong>' + s.pending_review + '</strong> · 已入库 <strong>' + s.approved_merch + '</strong>';
+        })
+        .catch(function() {});
+    }
+
+    loadHeaderStats();
+    loadQueue();
+  </script>
+</body>
+</html>
