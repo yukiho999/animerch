@@ -20,9 +20,6 @@ jobs:
       - name: Install dependencies
         run: pip install httpx pymysql pyyaml sqlalchemy
 
-      - name: Copy config
-        run: cp config.example.yaml config.yaml
-
       - name: Run crawler
         env:
           WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
