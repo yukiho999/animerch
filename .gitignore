@@ -38,3 +38,16 @@ chrome_profile/
 
 # Docker
 mysql_data/
+
+# Local dev scripts (don't commit)
+data_dump.py
+data_dump.sql
+debug_ip7.py
+data/weibo_login.py
+data/weibo_test.png
+data/start_chrome_debug.bat
+import_to_tidb.py
+migrate_to_tidb.py
+check_js.ps1
+test_proxy.ps1
+.gitignore-local
