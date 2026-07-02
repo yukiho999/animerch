@@ -204,6 +204,7 @@ def review_approve(mp_id: int, db: Session = Depends(get_db)):
         source_platform='weibo',
         source_url=mp.post_raw.post_url,
         original_post_id=mp.post_raw_id,
+        status='active',
     )
     db.add(merch)
     db.flush()  # 获取 merch.id
