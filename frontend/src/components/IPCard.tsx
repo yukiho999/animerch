@@ -8,13 +8,14 @@ import type { IPItem } from '../types';
 
 const FALLBACK_IMAGE = '/favicon.svg';
 
-const API_BASE = import.meta.env.VITE_API_BASE || '/api';
+// 生产环境 API 地址（图片代理用）；本地开发时 VITE_API_BASE 不设则为 /api
+const imgBase = import.meta.env.VITE_API_BASE || '/api';
 
 function imgUrl(raw: string | null): string {
   if (!raw) return FALLBACK_IMAGE;
   const u = raw.split(/[，,]+/)[0].trim();
   if (!u) return FALLBACK_IMAGE;
-  return `${API_BASE}/proxy/image?url=${encodeURIComponent(u)}`;
+  return `${imgBase}/proxy/image?url=${encodeURIComponent(u)}`;
 }
 
 export default function IPCard({ ip, index = 0 }: { ip: IPItem; index?: number }) {
