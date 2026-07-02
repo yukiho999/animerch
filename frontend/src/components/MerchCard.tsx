@@ -22,7 +22,7 @@ interface Props {
 }
 
 const FALLBACK_IMAGE = '/favicon.svg';
-const imgBase = import.meta.env.VITE_API_BASE || '/api';
+const imgBase = (import.meta as any).env?.VITE_API_BASE || '/api';
 
 function imgUrl(raw: string | null): string {
   if (!raw) return FALLBACK_IMAGE;

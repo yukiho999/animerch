@@ -8,8 +8,8 @@ import type { IPItem } from '../types';
 
 const FALLBACK_IMAGE = '/favicon.svg';
 
-// 生产环境 API 地址（图片代理用）；本地开发时 VITE_API_BASE 不设则为 /api
-const imgBase = import.meta.env.VITE_API_BASE || '/api';
+// 图片代理基地址：开发环境用相对路径 /api，生产环境在 CI 构建时传入 VITE_API_BASE
+const imgBase = (import.meta as any).env?.VITE_API_BASE || '/api';
 
 function imgUrl(raw: string | null): string {
   if (!raw) return FALLBACK_IMAGE;

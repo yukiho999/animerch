@@ -7,10 +7,10 @@ import { DetailSkeleton } from '../components/Skeleton';
 import { fetchMerch } from '../api/client';
 import type { MerchDetail } from '../types';
 
-const API_BASE_IMG = import.meta.env.VITE_API_BASE || '/api';
+const imgBaseDetail = (import.meta as any).env?.VITE_API_BASE || '/api';
 
 function proxyUrl(u: string): string {
-  return `${API_BASE_IMG}/proxy/image?url=${encodeURIComponent(u)}`;
+  return `${imgBaseDetail}/proxy/image?url=${encodeURIComponent(u)}`;
 }
 
 function parseImages(url: string | null): string[] {
