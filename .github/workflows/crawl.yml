@@ -1,0 +1,30 @@
+name: Scheduled Crawl
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # 每 6 小时一次
+  workflow_dispatch:         # 也支持手动触发
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install httpx pymysql pyyaml sqlalchemy
+
+      - name: Copy config
+        run: cp config.example.yaml config.yaml
+
+      - name: Run crawler
+        env:
+          WEIBO_COOKIE: ${{ secrets.WEIBO_COOKIE }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python backend/crawler/weibo_spider_cloud.py
