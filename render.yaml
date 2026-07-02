@@ -5,7 +5,7 @@
 
 services:
   - type: web
-    name: animerch-api
+    name: animerch-backend
     runtime: python
     region: oregon
     plan: free
