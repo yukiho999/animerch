@@ -368,8 +368,7 @@ def trigger_crawl(
     keyword: str | None = Query(None),
     db: Session = Depends(get_db),
 ):
-    """手动触发一次爬虫 — 爬完自动跑NLP"""
-    from backend.crawler.weibo_spider import WeiboSpider
+    """手动触发一次爬虫 — 云端模式（用 cookie 直接调微博 API）"""
     from backend.nlp.parser import NLPParser
     import threading
 
@@ -377,27 +376,111 @@ def trigger_crawl(
         from backend.database import SessionLocal
         sdb = SessionLocal()
         try:
-            # 1. 抓取（连接本地 Chrome CDP 复用已验证会话）
-            spider = WeiboSpider(db=sdb)
-            try:
-                if keyword:
-                    spider.search(keyword, max_pages=3)
-                else:
-                    spider.run_all(max_pages=3)
-            finally:
-                spider.close()
+            WEIBO_COOKIE = os.environ.get("WEIBO_COOKIE", "")
+            if not WEIBO_COOKIE:
+                print("[Crawl] WARNING: WEIBO_COOKIE not set")
+                return
 
-            # 2. NLP 解析
-            parser = NLPParser()
-            count = parser.parse_pending(db=sdb)
-            print(f"[Crawl] Parsed {count} posts")
+            import httpx, urllib.parse, json as _json, re as _re, time as _time
+            from datetime import datetime as _dt
+
+            # 解析 cookie
+            if WEIBO_COOKIE.strip().startswith("["):
+                try:
+                    cookies = _json.loads(WEIBO_COOKIE)
+                    cookie_str = "; ".join(f"{c['name']}={c['value']}" for c in cookies)
+                except:
+                    cookie_str = WEIBO_COOKIE
+            else:
+                cookie_str = WEIBO_COOKIE
+
+            client = httpx.Client(
+                headers={
+                    "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15",
+                    "Cookie": cookie_str,
+                    "Referer": "https://m.weibo.cn/",
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                timeout=30, follow_redirects=True,
+            )
+
+            keywords = [keyword] if keyword else [
+                "周边 上新", "谷子 发售", "吧唧 新品", "动漫周边 上新",
+            ]
+            total = 0
+            try:
+                for kw in keywords:
+                    for pg in range(1, 4):
+                        cid = f"100103type=1&q={urllib.parse.quote(kw)}"
+                        url = f"https://m.weibo.cn/api/container/getIndex?containerid={cid}&page={pg}"
+                        try:
+                            resp = client.get(url)
+                            data = resp.json()
+                        except Exception as e:
+                            print(f"[Crawl] request failed: {e}")
+                            break
+                        cards = data.get("data", {}).get("cards", []) if isinstance(data, dict) else []
+                        page_count = 0
+                        for card in cards:
+                            def _collect_mblogs(obj, result):
+                                if isinstance(obj, dict):
+                                    if obj.get("mblog"): result.append(obj["mblog"])
+                                    for v in obj.values(): _collect_mblogs(v, result)
+                                elif isinstance(obj, list):
+                                    for item in obj: _collect_mblogs(item, result)
+
+                            mblogs = []
+                            _collect_mblogs(card, mblogs)
+                            for mblog in mblogs:
+                                tid = str(mblog.get("id", "") or mblog.get("mid", "") or "")
+                                if not tid: continue
+                                if sdb.query(PostRaw).filter(
+                                    PostRaw.platform == "weibo", PostRaw.post_id == tid
+                                ).first(): continue
+
+                                text = _re.sub(r"<[^>]+>", "", (mblog.get("text", "") or ""))
+                                user = mblog.get("user", {}) or {}
+                                author = user.get("screen_name", "") if isinstance(user, dict) else ""
+                                images = []
+                                for pic in mblog.get("pics") or []:
+                                    if isinstance(pic, dict):
+                                        u = pic.get("large", {}).get("url") or pic.get("url", "")
+                                        if u: images.append(u)
+                                ct = mblog.get("created_at", "")
+                                try:
+                                    created = _dt.fromisoformat(ct.replace(" +0800", "")) if ct else _dt.utcnow()
+                                except:
+                                    created = _dt.utcnow()
+                                sdb.add(PostRaw(
+                                    platform="weibo", post_id=tid, author_name=author or "",
+                                    author_uid="", title=text[:700] if text else "", content=text,
+                                    images=images, video_url="", post_url=f"https://m.weibo.cn/detail/{tid}",
+                                    post_time=created, raw_json=mblog,
+                                ))
+                                page_count += 1
+                            if page_count and page_count % 10 == 0:
+                                sdb.commit()
+                        if page_count:
+                            sdb.commit()
+                        total += page_count
+                        print(f"[Crawl] {kw} page {pg}: {page_count} items")
+                        if page_count == 0: break
+                        _time.sleep(2)
+            finally:
+                client.close()
+
+            # NLP 解析
+            if total > 0:
+                parser = NLPParser()
+                parser.parse_pending(db=sdb)
+            print(f"[Crawl] Done: {total} new posts")
         finally:
             sdb.close()
 
     t = threading.Thread(target=_run, daemon=True)
     t.start()
 
-    return {"ok": True, "message": "爬虫已在后台启动，完成后自动运行 NLP 解析"}
+    return {"ok": True, "message": "云端爬虫已在后台启动"}
 
 
 @router.post("/crawl/reparse")
