@@ -29,7 +29,9 @@ function imgUrl(raw: string | null): string {
   const u = raw.split(/[，,]+/)[0].trim();
   if (!u) return FALLBACK_IMAGE;
   // 微博图片走后端代理绕过 Referer 防盗链
-  return `${imgBase}/proxy/image?url=${encodeURIComponent(u)}`;
+  const proxy = `${imgBase}/proxy/image?url=${encodeURIComponent(u)}`;
+  console.log('[MerchCard] proxy:', proxy);
+  return proxy;
 }
 
 export default function MerchCard({ merch, index = 0 }: Props) {
