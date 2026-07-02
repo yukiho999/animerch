@@ -21,8 +21,7 @@ interface Props {
   index?: number;
 }
 
-const B = (import.meta as any).env?.BASE_URL || '/animerch/';
-const FALLBACK_IMAGE = `${B}favicon.svg`;
+const FALLBACK_IMAGE = '/favicon.svg';
 const imgBase = (import.meta as any).env?.VITE_API_BASE || '/api';
 
 function imgUrl(raw: string | null): string {

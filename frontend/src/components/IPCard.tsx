@@ -6,9 +6,7 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { IPItem } from '../types';
 
-// fallback 图路径：开发环境 /favicon.svg，生产环境 /animerch/favicon.svg（GitHub Pages）
-const B = (import.meta as any).env?.BASE_URL || '/animerch/';
-const FALLBACK_IMAGE = `${B}favicon.svg`;
+const FALLBACK_IMAGE = '/favicon.svg';
 
 // 图片代理基地址
 const imgBase = (import.meta as any).env?.VITE_API_BASE || '/api';
