@@ -10,9 +10,7 @@ import type { MerchDetail } from '../types';
 const imgBaseDetail = (import.meta as any).env?.VITE_API_BASE || '/api';
 
 function proxyUrl(u: string): string {
-  const pu = `${imgBaseDetail}/proxy/image?url=${encodeURIComponent(u)}`;
-  console.log('[MerchDetail] proxy:', pu);
-  return pu;
+  return `${imgBaseDetail}/proxy/image?url=${encodeURIComponent(u)}`;
 }
 
 function parseImages(url: string | null): string[] {

@@ -6,7 +6,9 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import type { IPItem } from '../types';
 
-const FALLBACK_IMAGE = '/favicon.svg';
+// fallback 图路径：开发环境 /favicon.svg，生产环境 /animerch/favicon.svg（GitHub Pages）
+const B = (import.meta as any).env?.BASE_URL || '/animerch/';
+const FALLBACK_IMAGE = `${B}favicon.svg`;
 
 // 图片代理基地址
 const imgBase = (import.meta as any).env?.VITE_API_BASE || '/api';
@@ -15,9 +17,7 @@ function imgUrl(raw: string | null): string {
   if (!raw) return FALLBACK_IMAGE;
   const u = raw.split(/[，,]+/)[0].trim();
   if (!u) return FALLBACK_IMAGE;
-  const proxy = `${imgBase}/proxy/image?url=${encodeURIComponent(u)}`;
-  console.log('[IPCard] proxy:', proxy);
-  return proxy;
+  return `${imgBase}/proxy/image?url=${encodeURIComponent(u)}`;
 }
 
 export default function IPCard({ ip, index = 0 }: { ip: IPItem; index?: number }) {

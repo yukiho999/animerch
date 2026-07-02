@@ -3,7 +3,9 @@
 // ============================================
 import { useState, useEffect } from 'react';
 
-const BG_IMAGES = ['/bg.jpg', '/bg2.jpg', '/bg3.jpg', '/bg4.jpg'];
+// 背景图路径：开发环境 /bg.jpg，生产环境 /animerch/bg.jpg（GitHub Pages）
+const BASE = (import.meta as any).env?.BASE_URL || '/animerch/';
+const BG_IMAGES = ['bg.jpg', 'bg2.jpg', 'bg3.jpg', 'bg4.jpg'].map(f => `${BASE}${f}`);
 const SWITCH_INTERVAL = 8000; // 8 秒切换
 
 export default function GradientBg() {
